@@ -1,0 +1,483 @@
+/* Workflow Overview — layout and surfaces, mirroring the ops-dashboard
+   reference: light panel, white cards on a hairline border, large values with
+   muted labels, sparklines and share bars. */
+
+.wrap {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* left/right match the topbar and toolbar (14px / 12px) so the page's first
+     column lines up with the breadcrumb and the tabs above it */
+  padding: 16px 12px 26px 14px;
+  background: #f7f7f8;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(0 0 0 / .13) transparent;
+}
+
+.wrap::-webkit-scrollbar {
+  width: 9px;
+}
+
+.wrap::-webkit-scrollbar-thumb {
+  background: rgb(0 0 0 / .13);
+  border: 3px solid transparent;
+  border-radius: 99px;
+  background-clip: content-box;
+}
+
+/* ── header ─────────────────────────────────────────────────────────────── */
+
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  /* the page header is its own band: hairline under it, then the cards */
+  padding: 0 0 13px;
+  border-bottom: 1px solid #ececef;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 11px;
+  color: #9a9aa2;
+}
+
+.title {
+  margin: 2px 0 0;
+  font-size: 26px;
+  font-weight: 640;
+  letter-spacing: -0.03em;
+  color: #121215;
+}
+
+.headTools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pills {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: #fff;
+  border: 1px solid #ececef;
+  border-radius: 999px;
+}
+
+.pill,
+.pillOn {
+  border: 0;
+  background: transparent;
+  border-radius: 999px;
+  padding: 6px 13px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #6f6f77;
+  cursor: pointer;
+  transition: background .16s ease, color .16s ease;
+}
+
+.pill:hover {
+  color: #1a1a1f;
+}
+
+.pillOn {
+  background: #17181c;
+  color: #fff;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 13px;
+  background: #fff;
+  border: 1px solid #ececef;
+  border-radius: 999px;
+  color: #9a9aa2;
+  min-width: 210px;
+}
+
+.search input {
+  border: 0;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  color: #17181c;
+  width: 100%;
+}
+
+.search input::placeholder {
+  color: #a8a8b0;
+}
+
+/* ── cards ──────────────────────────────────────────────────────────────── */
+
+.card {
+  background: #fff;
+  border: 1px solid #eeeeef;
+  border-radius: 16px;
+  padding: 15px 16px 13px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .02);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cardLabel,
+.cardTitle {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #17181c;
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iconButton {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid #eeeeef;
+  color: #7c7c85;
+  flex: none;
+}
+
+.kpi {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.kpi strong {
+  font-size: 30px;
+  font-weight: 660;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  color: #121215;
+}
+
+.kpiUnit {
+  font-size: 11.5px;
+  color: #9a9aa2;
+}
+
+.kpiFoot {
+  display: flex;
+  gap: 18px;
+  margin-top: auto;
+}
+
+.kpiFootItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.kpiFootItem em {
+  font-style: normal;
+  font-size: 10.5px;
+  color: #9a9aa2;
+}
+
+.kpiFootItem strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2a2a31;
+}
+
+.note {
+  margin: 0;
+  font-size: 10.5px;
+  color: #9a9aa2;
+}
+
+/* ── charts ─────────────────────────────────────────────────────────────── */
+
+.spark {
+  width: 100%;
+  height: 38px;
+  display: block;
+}
+
+.bar {
+  display: block;
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: #f0f0f2;
+  overflow: hidden;
+}
+
+.barFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  animation: barIn 420ms cubic-bezier(.22, 1, .36, 1);
+}
+
+.barGray {
+  background: #c9c9d1;
+}
+
+@keyframes barIn {
+  from { transform: scaleX(.2); transform-origin: left; opacity: .4; }
+  to { transform: none; opacity: 1; }
+}
+
+/* ── grids ──────────────────────────────────────────────────────────────── */
+
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.listGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 1180px) {
+  .kpiGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .listGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  .kpiGrid, .listGrid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ── list cards ─────────────────────────────────────────────────────────── */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.listRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  font-size: 12.5px;
+  color: #3d3d45;
+  border-bottom: 1px solid #f5f5f6;
+}
+
+.listRow:last-child {
+  border-bottom: 0;
+}
+
+.listIcon {
+  width: 15px;
+  display: grid;
+  place-items: center;
+  color: #8f8f98;
+  flex: none;
+}
+
+.listLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip {
+  margin-left: auto;
+  font-size: 10.5px;
+  font-weight: 550;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.chip_green {
+  background: #eaf8e4;
+  color: #2f9a12;
+}
+
+.chip_blue {
+  background: #eaf2ff;
+  color: #2e78ff;
+}
+
+.chip_amber {
+  background: #fff3e0;
+  color: #c47c12;
+}
+
+.listValue {
+  margin-left: auto;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #17181c;
+  font-variant-numeric: tabular-nums;
+}
+
+.chip + .listValue {
+  margin-left: 0;
+  min-width: 34px;
+  text-align: right;
+}
+
+.cardFoot {
+  margin: 2px 0 0;
+  font-size: 10.5px;
+  color: #a2a2aa;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: block;
+}
+
+/* signals: a tick only when the count is zero, a warning otherwise */
+.signalIcon {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  flex: none;
+}
+
+.signalOk {
+  background: #eaf8e4;
+  color: #2f9a12;
+}
+
+.signalWarn {
+  background: #fff3e0;
+  color: #c47c12;
+}
+
+.dot_gray { background: #d9d9de; }
+.dot_blue { background: #3b82f6; }
+.dot_green { background: #35ba00; }
+
+/* ── table ──────────────────────────────────────────────────────────────── */
+
+.tableCard {
+  gap: 6px;
+  padding-bottom: 8px;
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+}
+
+.tr {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.2fr) 70px minmax(180px, 2fr);
+  align-items: center;
+  gap: 10px;
+  padding: 9px 6px;
+  border: 0;
+  border-bottom: 1px solid #f5f5f6;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  font-size: 12.5px;
+  color: #3d3d45;
+  border-radius: 8px;
+  cursor: default;
+}
+
+.tr:last-child {
+  border-bottom: 0;
+}
+
+.tr:not(.trHead):hover {
+  background: #fafafb;
+}
+
+.trHead {
+  font-size: 11px;
+  color: #9a9aa2;
+  text-transform: none;
+  border-bottom: 1px solid #f0f0f2;
+  padding-bottom: 7px;
+}
+
+.personCell {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 600;
+  flex: none;
+}
+
+.numCell {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: #2a2a31;
+}
+
+.shareCell {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.shareNum {
+  font-size: 11.5px;
+  color: #6f6f77;
+  font-variant-numeric: tabular-nums;
+}
+
+.empty {
+  margin: 14px 6px;
+  font-size: 12px;
+  color: #9a9aa2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barFill { animation: none; }
+}

@@ -1,0 +1,727 @@
+/* Sidebar — full-height rail of a viewport-sized shell.
+   The shell never scrolls, so the rail can't detach from it; only .nav
+   scrolls internally when the viewport is short. */
+
+.sidebar {
+  /* neutrals tuned to the shell's palette so the rail reads as part of the
+     product, not as a grey box parked next to a white one */
+  --sb-seam: #ececef;
+  --sb-ink: #6e6f75;
+  --sb-ink-strong: #17181a;
+  --sb-accent: #2e78ff;
+  --sb-spring: cubic-bezier(.34, 1.56, .64, 1);
+
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  /* floats as a card, same shell as the board panel: 10px gutter, 18px radius,
+     hairline border, same two-layer shadow. Surface stays a hair tinted so the
+     white active row and the white content card still read as separate layers. */
+  margin: 10px;
+  border: 1px solid #e8e8e8;
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .04), 0 10px 30px rgb(0 0 0 / .035);
+  background: linear-gradient(180deg, #fcfcfd 0%, #f8f8fa 100%);
+  overflow: hidden;
+  transition: background .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+
+.sidebarTop {
+  flex: none;
+  height: 60px;
+  padding: 0 13px 0 15px;
+  border-bottom: 1px solid var(--sb-seam);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logoWrap {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 4px;
+  margin: -4px;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: gap .28s var(--ease-out-soft), background .18s ease;
+}
+
+.logoWrap:hover {
+  background: #f2f2f4;
+}
+
+.logoWrap:hover .logoMark {
+  box-shadow: 0 3px 9px rgb(0 0 0 / .28), inset 0 0 0 1px rgb(255 255 255 / .16);
+}
+
+.logoWrap:active .logoMark {
+  scale: .96;
+}
+
+.logoText {
+  max-width: 140px;
+  font-weight: 650;
+  font-size: 14px;
+  letter-spacing: -0.02em;
+  color: var(--sb-ink-strong);
+  overflow: hidden;
+  transition:
+    max-width .28s var(--ease-out-soft),
+    opacity .18s ease,
+    visibility 0s 0s;
+}
+
+/* The wordmark carries a neutral shimmer: a light band sweeping across ink-black
+   text on a loop. */
+.logoText {
+  font-weight: 700;
+  background-image: linear-gradient(
+    100deg,
+    var(--sb-ink-strong) 0%,
+    var(--sb-ink-strong) 38%,
+    #9fa1a8 50%,
+    var(--sb-ink-strong) 62%,
+    var(--sb-ink-strong) 100%
+  );
+  background-size: 260% 100%;
+  /* repeat: with no-repeat the band's travel leaves the glyphs unpainted at the
+     ends of the cycle, which erases part of the word */
+  background-repeat: repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: wordmarkShimmer 5s linear infinite;
+}
+
+@keyframes wordmarkShimmer {
+  from { background-position: 160% 0; }
+  to { background-position: -60% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logoText { animation: none; background-position: 0 0; }
+}
+
+.logoMark {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  position: relative;
+  display: block;
+  flex: none;
+  /* black tile, white pinwheel — matches public/favicon.svg */
+  background: linear-gradient(140deg, #2c2d33, #101013);
+  box-shadow: 0 2px 6px rgb(0 0 0 / .22), inset 0 0 0 1px rgb(255 255 255 / .10);
+  overflow: hidden;
+  transition: box-shadow .25s ease;
+}
+
+.logoMark span {
+  position: absolute;
+  width: 16px;
+  height: 3px;
+  border-radius: 99px;
+  background: #fff;
+  top: 50%;
+  left: 50%;
+  transform-origin: left center;
+}
+
+.logoMark span:nth-child(1) { transform: rotate(0deg) translate(-1px, -1px); }
+.logoMark span:nth-child(2) { transform: rotate(60deg) translate(-1px, -1px); }
+.logoMark span:nth-child(3) { transform: rotate(120deg) translate(-1px, -1px); }
+.logoMark span:nth-child(4) { transform: rotate(180deg) translate(-1px, -1px); }
+.logoMark span:nth-child(5) { transform: rotate(240deg) translate(-1px, -1px); }
+.logoMark span:nth-child(6) { transform: rotate(300deg) translate(-1px, -1px); }
+
+.collapseButton {
+  width: 28px;
+  /* explicit max-width so the collapse interpolates 28px → 0 instead of
+     none → 0, which spends most of the duration above the element's width */
+  max-width: 28px;
+  height: 28px;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 9px;
+  color: #9b9ca1;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  flex: none;
+  transition:
+    background .18s ease,
+    color .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease,
+    max-width .28s var(--ease-out-soft),
+    border-width .28s var(--ease-out-soft),
+    opacity .18s ease,
+    visibility 0s 0s;
+}
+
+.collapseButton:hover {
+  background: #fff;
+  border-color: var(--sb-seam);
+  color: #3d3e43;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .05);
+}
+
+/* Nav — scrolls on its own when the viewport is short; the mask lets rows
+   dissolve at both ends instead of being sawn off by the scroll box. */
+
+.nav {
+  flex: 1;
+  min-height: 0;
+  padding: 8px 0 20px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(0 0 0 / .13) transparent;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 8px, #000 calc(100% - 18px), transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 8px, #000 calc(100% - 18px), transparent 100%);
+}
+
+.nav::-webkit-scrollbar {
+  width: 8px;
+}
+
+.nav::-webkit-scrollbar-thumb {
+  background: rgb(0 0 0 / .13);
+  border: 2px solid transparent;
+  border-radius: 99px;
+  background-clip: content-box;
+}
+
+.nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.navGroup,
+.navSection {
+  padding: 8px 12px;
+}
+
+.navGroup {
+  padding-top: 12px;
+}
+
+.navSection {
+  border-top: 1px solid var(--sb-seam);
+  padding-top: 12px;
+  margin-top: 3px;
+}
+
+.sectionLabel {
+  margin: 0 8px 7px;
+  height: 13px;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 550;
+  letter-spacing: .08em;
+  color: #a4a5aa;
+  transition:
+    height .28s var(--ease-out-soft),
+    margin .28s var(--ease-out-soft),
+    opacity .18s ease;
+}
+
+.sideRow {
+  position: relative;
+  width: 100%;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--sb-ink);
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: 9px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background .18s ease,
+    color .18s ease,
+    box-shadow .22s var(--ease-out-soft),
+    gap .28s var(--ease-out-soft),
+    padding .28s var(--ease-out-soft);
+}
+
+/* accent rail — grows out of the left edge of the active row only */
+.sideRow::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  width: 3px;
+  height: 0;
+  border-radius: 99px;
+  background: var(--sb-accent);
+  opacity: 0;
+  transform: translateY(-50%);
+  transition:
+    height .26s var(--ease-out-soft),
+    opacity .18s ease;
+}
+
+/* every icon sits in the same fixed column, main and nested alike.
+   14px column for 12–13px glyphs, and the stroke comes down to 1.75 so a 13px
+   icon carries the same optical weight as 12px text instead of shouting. */
+.rowIcon {
+  width: 14px;
+  height: 14px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.rowIcon svg {
+  stroke-width: 1.75;
+  flex: none;
+}
+
+.rowIcon > span {
+  display: grid;
+  place-items: center;
+}
+
+/* the board row is the tree's header: chevron sits at the far edge */
+.boardRow {
+  position: relative;
+}
+
+.boardRow .rowBadge {
+  margin-left: auto;
+}
+
+.members {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 4px 16px;
+}
+
+/* three avatars in a tight stack; the fan is the same motion as the old recipe,
+   written here so the component owns its own styles */
+.avatars {
+  position: relative;
+  width: 34px;
+  height: 22px;
+  flex: none;
+}
+
+.avatar {
+  position: absolute;
+  top: 0;
+  left: 11px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 9.5px;
+  font-weight: 650;
+  color: #fff;
+  box-shadow: 0 0 0 1.5px #fbfbfc, 0 1px 3px rgb(0 0 0 / .18);
+  translate: 0 0;
+  rotate: 0deg;
+  transition:
+    translate .36s var(--ease-out-soft),
+    rotate .36s var(--ease-out-soft);
+  will-change: translate, rotate;
+}
+
+.members:hover .avatar {
+  translate: var(--av-x) 0;
+  rotate: var(--av-rot);
+  transition:
+    translate .41s cubic-bezier(.31, 1.84, .64, 1),
+    rotate .41s cubic-bezier(.31, 1.84, .64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar { transition: none; }
+}
+
+.membersLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 120px;
+  overflow: hidden;
+  font-size: 11px;
+  color: #a0a0a0;
+}
+
+.membersLabel svg {
+  stroke-width: 1.75;
+}
+
+/* translucent tints, so hover/active sit *in* the gradient rather than over it */
+.sideRow:hover {
+  background: rgb(0 0 0 / .045);
+  color: #3b3c41;
+}
+
+.sideRow:focus-visible {
+  outline: 2px solid #8ab4ff;
+  outline-offset: -2px;
+}
+
+.sideRowNested {
+  padding-left: 8px;
+}
+
+.sideRowActive,
+.sideRowActive:hover {
+  background: #fff;
+  color: var(--sb-ink-strong);
+  font-weight: 550;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / .045), 0 1px 3px rgb(0 0 0 / .05);
+}
+
+.sideRowActive::before {
+  height: 18px;
+  opacity: 1;
+}
+
+.sideRowActive svg {
+  color: var(--sb-accent);
+}
+
+.rowLabel {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    max-width .28s var(--ease-out-soft),
+    opacity .18s ease,
+    visibility 0s 0s;
+}
+
+/* state change */
+.rowBadge {
+  margin-left: auto;
+  min-width: 18px;
+  max-width: 44px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / .05);
+  color: #7e7f85;
+  font-size: 10px;
+  font-weight: 500;
+  text-align: center;
+  overflow: hidden;
+  transition:
+    background .15s ease,
+    color .15s ease,
+    max-width .28s var(--ease-out-soft),
+    opacity .18s ease,
+    visibility 0s 0s;
+  animation: badgeSlideIn 260ms var(--ease-out-soft);
+}
+
+@keyframes badgeSlideIn {
+  from {
+    transform: translate(-8px, 12px);
+  }
+
+  to {
+    transform: translate(0, 0);
+  }
+}
+
+/* state change */
+.digitGroup {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.digit {
+  display: inline-block;
+  will-change: transform, opacity, filter;
+}
+
+.digitGo .digit {
+  animation: digitPopIn 500ms var(--sb-spring, var(--ease-out-soft)) both;
+}
+
+.digitGo .digit[data-stagger="1"] {
+  animation-delay: 70ms;
+}
+
+.digitGo .digit[data-stagger="2"] {
+  animation-delay: 140ms;
+}
+
+@keyframes digitPopIn {
+  0% {
+    transform: translate(0, 8px);
+    opacity: 0;
+    filter: blur(var(--blur-soft));
+  }
+
+  100% {
+    transform: translate(0, 0);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+.sideRowActive .rowBadge {
+  background: #e6efff;
+  color: var(--sb-accent);
+}
+
+.rowChevron {
+  margin-left: auto;
+  max-width: 18px;
+  display: grid;
+  place-items: center;
+  color: #a4a5a9;
+  overflow: hidden;
+  transform: rotate(-90deg);
+  transition:
+    transform .25s var(--ease-out-soft),
+    max-width .28s var(--ease-out-soft),
+    opacity .18s ease,
+    visibility 0s 0s;
+}
+
+.rowChevronOpen {
+  transform: rotate(0deg);
+}
+
+.rowChevron svg,
+.collapseButton svg {
+  stroke-width: 1.75;
+}
+
+/* state change */
+.treeWrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows .25s var(--ease-out-soft);
+}
+
+.treeWrapClosed {
+  grid-template-rows: 0fr;
+}
+
+.treeInner {
+  min-height: 0;
+  overflow: hidden;
+  opacity: 1;
+  filter: blur(0);
+  transition:
+    opacity .25s var(--ease-out-soft),
+    filter .25s var(--ease-out-soft);
+}
+
+.treeWrapClosed .treeInner {
+  opacity: 0;
+  filter: blur(var(--blur-soft));
+}
+
+.tree {
+  /* guide line sits under the team icon's center column:
+     section pad 12 + row pad 8 + half of the 14px icon column = 27 */
+  margin: 2px 0 2px 15px;
+  padding-left: 9px;
+  border-left: 1px solid #e4e4e8;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  transition:
+    margin .28s var(--ease-out-soft),
+    padding .28s var(--ease-out-soft),
+    border-left-width .28s var(--ease-out-soft),
+    border-left-color .2s ease;
+}
+
+/* state change */
+.iconSwap {
+  position: relative;
+  display: inline-grid;
+}
+
+.iconSwapItem {
+  grid-area: 1 / 1;
+  display: grid;
+  place-items: center;
+  transition:
+    opacity 250ms ease-in-out,
+    filter 250ms ease-in-out,
+    transform 250ms ease-in-out;
+  will-change: opacity, filter, transform;
+}
+
+.iconSwap[data-state="a"] .iconSwapItem[data-icon="a"],
+.iconSwap[data-state="b"] .iconSwapItem[data-icon="b"] {
+  opacity: 1;
+  filter: blur(0);
+  transform: scale(1);
+}
+
+.iconSwap[data-state="a"] .iconSwapItem[data-icon="b"],
+.iconSwap[data-state="b"] .iconSwapItem[data-icon="a"] {
+  opacity: 0;
+  filter: blur(var(--blur-soft));
+  transform: scale(0.25);
+}
+
+.teamBadge {
+  width: 13px;
+  height: 13px;
+  border-radius: 4px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 8px;
+  background: linear-gradient(140deg, #4a8dff, #2f6ffb);
+  color: white;
+  flex: none;
+}
+
+.teamBadge svg {
+  stroke-width: 2;
+}
+
+.sidebarBottom {
+  flex: none;
+  padding: 10px 12px 14px;
+  border-top: 1px solid var(--sb-seam);
+}
+
+.helpIcon {
+  width: 12px;
+  height: 12px;
+  border: 1px solid #b3b4b8;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  font-size: 8px;
+  line-height: 1;
+  color: #8a8b90;
+}
+
+/* Collapsed icon rail — labels, badges and chevrons collapse to zero width
+   instead of popping out with display:none, so the rail glides in on the same
+   curve as the shell's grid-template-columns transition. Width 0 + visibility
+   keeps them from reserving space or catching pointer events. */
+
+/* collapsed rail: the chevron steps out and the mark stands alone, still the
+   way back to the overview */
+
+.collapsed .collapseButton {
+  max-width: 0;
+  /* a flex item's automatic minimum size (min-width: auto) floors it at the
+     14px icon's min-content, which left a 14px ghost and knocked the logo
+     7px off the rail's centre line */
+  min-width: 0;
+  padding-inline: 0;
+  /* with box-sizing: border-box a max-width of 0 still can't go below the
+     2x1px border, so the border width has to collapse too */
+  border-width: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  border-color: transparent;
+  transition:
+    max-width .28s var(--ease-out-soft),
+    min-width .28s var(--ease-out-soft),
+    padding-inline .28s var(--ease-out-soft),
+    border-width .28s var(--ease-out-soft),
+    opacity .18s ease,
+    border-color .18s ease,
+    visibility 0s .28s;
+}
+
+.collapsed .logoWrap {
+  gap: 0;
+}
+
+.collapsed .sidebarTop {
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+}
+
+.collapsed .logoText,
+.collapsed .rowLabel,
+.collapsed .rowBadge,
+.collapsed .rowChevron,
+.collapsed .membersLabel {
+  max-width: 0;
+  min-width: 0;
+  /* padding is outside max-width: a badge's 12px of inline padding would keep
+     pushing its row's icon 18px off the rail's centre line. The auto margin has
+     to go too — auto margins swallow the free space before justify-content can
+     centre anything, which left badge rows hugging the rail's left edge. */
+  padding-inline: 0;
+  margin-left: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  /* hide only once the width has finished collapsing */
+  transition:
+    max-width .28s var(--ease-out-soft),
+    min-width .28s var(--ease-out-soft),
+    padding-inline .28s var(--ease-out-soft),
+    margin-left .28s var(--ease-out-soft),
+    opacity .18s ease,
+    visibility 0s .28s;
+}
+
+/* section headers are block-level: animate the box, not just the text */
+.collapsed .sectionLabel {
+  height: 0;
+  margin-bottom: 0;
+  opacity: 0;
+}
+
+.collapsed .sideRow {
+  justify-content: center;
+  gap: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.collapsed .sideRowNested {
+  padding-left: 0;
+}
+
+.collapsed .tree {
+  margin-left: 0;
+  padding-left: 0;
+  border-left-width: 0;
+  border-left-color: transparent;
+  gap: 0;
+}
+
+.collapsed .navGroup,
+.collapsed .navSection {
+  padding: 10px;
+}
+
+/* the footer has to give rows the same width as the nav, or its icons sit in a
+   narrower pill column than the rows above them */
+.collapsed .sidebarBottom {
+  padding: 10px;
+}
+
+/* member stack becomes an icon-only cluster on the rail */
+.collapsed .members {
+  justify-content: center;
+  gap: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+@media (max-width: 820px) {
+  .sidebar {
+    display: none;
+  }
+}
