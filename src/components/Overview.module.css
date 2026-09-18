@@ -481,3 +481,110 @@
 @media (prefers-reduced-motion: reduce) {
   .barFill { animation: none; }
 }
+
+/* Phone density. The desktop card is sized for a 4-up grid on a wide panel:
+   at phone width the same padding, 26px title, 30px value and 38px sparkline
+   stack into ~186px slabs, and the head's pill row plus its 210px people search
+   wrapped into a 165px band before the first card. Everything here is scoped to
+   the phone breakpoint, so the desktop Overview is untouched. */
+@media (max-width: 820px) {
+  .wrap {
+    padding: 13px 12px 22px;
+    gap: 11px;
+  }
+
+  /* the header band stacks: title, then the window pills on their own full-width
+     row, then the people search. No item can be squeezed or clipped. */
+  .head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 9px;
+    padding: 0 0 11px;
+  }
+
+  .title {
+    font-size: 21px;
+  }
+
+  .headTools {
+    width: 100%;
+    gap: 8px;
+  }
+
+  /* four pills no longer fit 304px, so the strip scrolls instead of overflowing
+     the card edge; the scrollbar is suppressed because it is a one-row control */
+  .pills {
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  /* flex items shrink by default, so the pills were squeezing their labels onto
+     a second line (a 46px strip) to fit the strip instead of scrolling in it */
+  .pills .pill,
+  .pills .pillOn {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  .pills::-webkit-scrollbar {
+    display: none;
+  }
+
+  .search {
+    flex: 1 1 100%;
+    min-width: 0;
+    height: 32px;
+  }
+
+  .kpiGrid,
+  .listGrid {
+    gap: 10px;
+  }
+
+  /* denser cards: what a phone loses in width it should not pay back in height */
+  .card {
+    padding: 12px 13px 11px;
+    border-radius: 14px;
+    gap: 8px;
+  }
+
+  .cardLabel,
+  .cardTitle {
+    font-size: 13px;
+  }
+
+  .kpi strong {
+    font-size: 25px;
+  }
+
+  .spark {
+    height: 26px;
+  }
+
+  .bar {
+    height: 7px;
+  }
+
+  .kpiFoot {
+    gap: 16px;
+  }
+
+  /* The assignee row is floored at 390px (120 + 70 + 180 plus gaps), wider than
+     a phone's card, so the page could be scrolled sideways by a table that is
+     meant to be read, not panned. The three columns now divide the card width. */
+  .tr {
+    grid-template-columns: minmax(0, 1.15fr) 40px minmax(0, 1.35fr);
+    gap: 8px;
+    padding: 8px 4px;
+  }
+
+  .shareCell {
+    grid-template-columns: 34px 1fr;
+    gap: 8px;
+  }
+
+  .listRow {
+    min-height: 31px;
+  }
+}

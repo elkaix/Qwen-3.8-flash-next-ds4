@@ -712,16 +712,15 @@
   padding: 10px;
 }
 
-/* member stack becomes an icon-only cluster on the rail */
+/* Collapsed rail is monochrome line icons only. The members cluster is a
+   stacked set of filled colour initials (green "J", etc.) with a white ring
+   shadow — it reads as a broken stray blob on the rail, not an icon. Hide the
+   whole cluster until the sidebar is expanded. */
 .collapsed .members {
-  justify-content: center;
-  gap: 0;
-  padding-left: 0;
-  padding-right: 0;
+  display: none;
 }
 
-@media (max-width: 820px) {
-  .sidebar {
-    display: none;
-  }
-}
+/* The rail stays at phone width. The shell's grid keeps a dedicated column for
+   it, so hiding the rail would leave that track holding no item at all: the
+   content panel would auto-place into the 60px rail column instead of the 1fr
+   beside it, painting only a 60px sliver of dashboard against a blank shell. */

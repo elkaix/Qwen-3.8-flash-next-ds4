@@ -18,6 +18,13 @@
   padding: 0;
   display: grid;
   place-items: stretch;
+  /* One definite row, pinned to the stage's own height. A bare `place-items`
+     grid leaves the implicit row `auto`, so a page taller than the viewport
+     (the stacked Overview) grew the row, the shell and the sidebar card with
+     it: the rail stretched to the document height and its icons sat at the top
+     of a 1800px void. minmax(0, 1fr) caps the row at the viewport instead and
+     leaves each page's own scroll root to scroll. */
+  grid-template-rows: minmax(0, 1fr);
   background: #ececee;
   color: var(--text);
   font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -42,7 +49,11 @@ button {
   width: 100%;
   height: 100vh;
   display: grid;
-  grid-template-columns: 245px 1fr;
+  /* minmax(0, 1fr) on the content track, not a bare 1fr: a bare 1fr floors the
+     track at its item's min-content width, so a wide topbar or board forced the
+     whole column past the viewport and `.content`'s overflow:hidden clipped it
+     instead of the page scrolling. */
+  grid-template-columns: 245px minmax(0, 1fr);
   overflow: clip;
   background: transparent;
   box-shadow: none;
@@ -52,7 +63,7 @@ button {
 .appShell.shellCollapsed {
   /* 92px column = the 72px icon rail the design calls for, plus the sidebar
      card's 10px margin on each side */
-  grid-template-columns: 92px 1fr;
+  grid-template-columns: 92px minmax(0, 1fr);
 }
 
 .iconButton,
@@ -70,6 +81,12 @@ button {
   min-height: 0;
   display: grid;
   grid-template-rows: 60px 55px 1fr;
+  /* one definite column. A grid with no explicit columns gets an `auto` track,
+     which is floored at its items' min-content: the topbar's min-content width
+     then widened the whole column past the shell and `.content`'s overflow:
+     hidden simply clipped the excess cards and chrome. minmax(0, 1fr) lets the
+     column shrink to the track so each child can shrink with it. */
+  grid-template-columns: minmax(0, 1fr);
   /* its own card: the rounded corners begin after the sidebar, so the sidebar
      reads as attached to the side of the page */
   margin: 10px;
@@ -117,6 +134,10 @@ button {
   color: #8b8b93;
   cursor: pointer;
   white-space: nowrap;
+  /* a bare max-width cannot shrink a nowrap flex item: its automatic minimum
+     size is the whole label, so the crumb pushed the topbar wider instead of
+     ellipsising */
+  min-width: 0;
   max-width: 300px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1420,11 +1441,11 @@ button {
     border-radius: 0;
     /* the rail stays: it is the only navigation on a phone-width viewport, and
        the component collapses itself at this size */
-    grid-template-columns: 72px 1fr;
+    grid-template-columns: 72px minmax(0, 1fr);
   }
 
   .appShell.shellCollapsed {
-    grid-template-columns: 60px 1fr;
+    grid-template-columns: 60px minmax(0, 1fr);
   }
 
   .content {
@@ -1435,15 +1456,84 @@ button {
     box-shadow: none;
   }
 
-  .board {
+  /* Phone board: one lane per snap page instead of a 980px desktop strip the
+     viewport cuts in half. min-width: 0 retires the ≤1180 floor, so the board
+     owns the horizontal axis and the page never scrolls sideways. Each lane is
+     86% of the board, so a full lane is readable and the next one still peeks;
+     the cap keeps a tablet from getting one 600px lane, which would be the
+     squeeze again in a wider jacket. The side panel becomes the last page
+     instead of a 144px track eating the lane width. The board is a grid, so its
+     explicit tracks have to be dropped (grid-template-columns: none) before the
+     auto columns apply. */
+  .board,
+  .boardFull {
     margin: 0;
     border: 0;
     border-radius: 0;
+    min-width: 0;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: min(86%, 340px);
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .board::-webkit-scrollbar {
+    display: none;
+  }
+
+  .board > * {
+    scroll-snap-align: start;
+  }
+
+  /* Phone chrome. Nothing pins a min-width on the topbar or toolbar: the
+     board's own 980px minimum already widens the board route, and pinning it on
+     the chrome only force-widened the routes with no board (Overview, Inbox)
+     past the viewport. The breadcrumb keeps only where you are, because the
+     ancestor links plus the doc glyph were pinned at 300/340px with nowrap and
+     pushed the bar 177px past a 390px viewport. Nothing is lost: the rail's
+     logo is the way back to the overview at this width. */
+  .breadcrumb .crumbLink,
+  .breadcrumb .crumbSep,
+  .breadcrumb .docIcon {
+    display: none;
   }
 
   .topbar,
   .toolbar {
-    min-width: 980px;
+    gap: 8px;
+  }
+
+  /* The board search moves out at phone width instead of being clipped:
+     Overview has its own people search, and 176px of board search was what the
+     tabs were colliding with. The tab strip shrinks and scrolls so a fourth
+     tab can never be sawn off either. */
+  .searchBox {
+    display: none;
+  }
+
+  .tabs {
+    min-width: 0;
+    flex: 0 1 auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* The density and side-panel toggles are desktop affordances. Left in place
+     they cost 78px, which is what pushed the last tab and the add-tab out of
+     the strip (the strip then scrolled them off rather than showing them). The
+     panel itself is still reachable on a phone through the rail's Backlog row,
+     which is the /backlog route. The priority filter is the one tool kept. */
+  .toolbarRight .toolButton[aria-label="Display settings"],
+  .toolbarRight .toolButton[aria-label="Show side panel"] {
+    display: none;
   }
 }
 
